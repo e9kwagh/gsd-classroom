@@ -13,34 +13,37 @@ from .models import (
 
 @admin.register(Faculty)
 class FacultyAdmin(admin.ModelAdmin):
-    pass
-
+    list_display = ("id","user","github","is_active")
+  
+    
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    pass
+     list_display = ("user","github","is_active","program")
 
 
 @admin.register(Content)
 class ContentAdmin(admin.ModelAdmin):
-    pass
-
+     list_display = ["name"]
 
 @admin.register(Program)
 class ProgramAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("name","start","end")
 
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["name"]
 
 
 @admin.register(Assignment)
 class AssignmentAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("program","course","content","due","instructions","rubric")
 
-
+   
 @admin.register(StudentAssignment)
 class StudentAssignmentAdmin(admin.ModelAdmin):
-    pass
+        list_display = ("student","assignment","grade","submitted","reviewed","reviewer","feedback")
+
+
+
