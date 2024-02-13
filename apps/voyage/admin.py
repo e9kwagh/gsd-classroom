@@ -13,22 +13,22 @@ from .models import (
 
 @admin.register(Faculty)
 class FacultyAdmin(admin.ModelAdmin):
-    list_display = ("id","user","github","is_active")
-  
-    
+    list_display = ("id", "user", "github", "is_active")
+
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-     list_display = ("user","github","is_active","program")
+    list_display = ("user", "github", "is_active", "program")
 
 
 @admin.register(Content)
 class ContentAdmin(admin.ModelAdmin):
-     list_display = ["name"]
+    list_display = ["name"]
+
 
 @admin.register(Program)
 class ProgramAdmin(admin.ModelAdmin):
-    list_display = ("name","start","end")
+    list_display = ("name", "start", "end")
 
 
 @admin.register(Course)
@@ -38,12 +38,17 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(Assignment)
 class AssignmentAdmin(admin.ModelAdmin):
-    list_display = ("program","course","content","due","instructions","rubric")
+    list_display = ("program", "course", "content", "due", "instructions", "rubric")
 
-   
+
 @admin.register(StudentAssignment)
 class StudentAssignmentAdmin(admin.ModelAdmin):
-        list_display = ("student","assignment","grade","submitted","reviewed","reviewer","feedback")
-
-
-
+    list_display = (
+        "student",
+        "assignment",
+        "grade",
+        "submitted",
+        "reviewed",
+        "reviewer",
+        "feedback",
+    )

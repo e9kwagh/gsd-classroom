@@ -10,51 +10,55 @@ class Faculty(QuxModel):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     github = models.CharField(max_length=39, unique=True)
     is_active = models.BooleanField(default=True)
-    
-    
+
     @classmethod
-    def random_faculty(cls):  
+    def random_faculty(cls):
         faker = Faker()
         for _ in range(5):
             username = faker.user_name()
             first_name = faker.first_name()
-            last_name  = faker.last_name()
-            email =faker.email()
+            last_name = faker.last_name()
+            email = faker.email()
 
-            user = get_user_model().objects.create_user(email=email , username = username ,first_name = first_name ,last_name =last_name)
-            Faculty.objects.create(user = user, github = f"https://github.com/{username}" ,is_active = True)
-        
-      
+            user = get_user_model().objects.create_user(
+                email=email,
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            Faculty.objects.create(
+                user=user, github=f"https://github.com/{username}", is_active=True
+            )
 
     def programs(self):
         return Program.objects.none()
 
     def courses(self):
         """
-          Show the number of courses each faculty is teaching
+        Show the number of courses each faculty is teaching
         """
-        
+
         return self.content_set.filter(assignment__isnull=False).distinct().count()
-        
 
     def assignments_graded(self, assignment=None):
         """
         Show the number of assignments graded by each faculty
         """
-        if assignment :
-            return StudentAssignment.objects.filter(reviewed =self ,assignment = assignment )
-        return StudentAssignment.objects.filter(reviewed =self )
-    
+        if assignment:
+            return StudentAssignment.objects.filter(
+                reviewed=self, assignment=assignment
+            )
+        return StudentAssignment.objects.filter(reviewed=self)
+
     def no_assignments(self):
         """
         Show the number of assignments by each faculty
         """
         return Assignment.objects.filter(program__faculty=self).count()
 
-
     def content(self, program=None, course=None):
         """
-         content of  programs or courses of  faculty.
+        content of  programs or courses of  faculty.
         """
         contents = self.content_set.all()
 
@@ -84,6 +88,7 @@ class Faculty(QuxModel):
 
         return contents
 
+
 class Program(QuxModel):
     """
     Example: Cohort-2
@@ -94,14 +99,15 @@ class Program(QuxModel):
     end = models.DateTimeField()
 
     @classmethod
-    def random_program(cls):  
+    def random_program(cls):
         faker = Faker()
-        for _ in range(3):          
+        for _ in range(3):
             name = faker.first_name()
-            start = faker.date_time_this_decade(tzinfo=None) + timedelta(days=faker.random_int(min=1, max=365))
-            end  = start + timedelta(days=faker.random_int(min=1, max=365))
-            Program.objects.create(name = name, start = start,end = end)
-        
+            start = faker.date_time_this_decade(tzinfo=None) + timedelta(
+                days=faker.random_int(min=1, max=365)
+            )
+            end = start + timedelta(days=faker.random_int(min=1, max=365))
+            Program.objects.create(name=name, start=start, end=end)
 
     def __str__(self):
         return self.name
@@ -111,7 +117,6 @@ class Program(QuxModel):
         List of students in the program
         """
         return self.student_set.all().count()
-    
 
 
 class Course(QuxModel):
@@ -122,12 +127,11 @@ class Course(QuxModel):
     name = models.CharField(max_length=128, unique=True)
 
     @classmethod
-    def random_course(cls):  
+    def random_course(cls):
         faker = Faker()
-        for _ in range(3):          
-            name = faker.first_name()            
-            Course.objects.create(name = name)
-        
+        for _ in range(3):
+            name = faker.first_name()
+            Course.objects.create(name=name)
 
     def __str__(self):
         return self.name
@@ -159,13 +163,15 @@ class Content(QuxModel):
         verbose_name_plural = "Content"
 
     @classmethod
-    def random_content(cls):  
+    def random_content(cls):
         faker = Faker()
         for i in range(28):
-            id = int(random.sample(range(2,6), 1)[0])
-            repo =  f"https://github.com/{i}"
-            Content.objects.create(name = faker.first_name(), faculty = Faculty.objects.get(pk=id) ,repo = repo)
-        
+            id = int(random.sample(range(2, 6), 1)[0])
+            repo = f"https://github.com/{i}"
+            Content.objects.create(
+                name=faker.first_name(), faculty=Faculty.objects.get(pk=id), repo=repo
+            )
+
 
 class Student(QuxModel):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
@@ -174,19 +180,28 @@ class Student(QuxModel):
     program = models.ForeignKey(Program, on_delete=models.DO_NOTHING)
 
     @classmethod
-    def random_student(cls):  
+    def random_student(cls):
         faker = Faker()
         for _ in range(10):
             username = faker.user_name()
             first_name = faker.first_name()
-            last_name  = faker.last_name()
-            email =faker.email()
+            last_name = faker.last_name()
+            email = faker.email()
 
-            user = get_user_model().objects.create_user(email=email , username = username ,first_name = first_name ,last_name =last_name)
-            id = int(random.sample(range(1,3), 1)[0])
+            user = get_user_model().objects.create_user(
+                email=email,
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            id = int(random.sample(range(1, 3), 1)[0])
             program = Program.objects.get(pk=id)
-            Student.objects.create(user = user, github = f"https://github.com/{username}" ,is_active = True ,program = program )
-        
+            Student.objects.create(
+                user=user,
+                github=f"https://github.com/{username}",
+                is_active=True,
+                program=program,
+            )
 
     def courses(self):
         return Course.objects.none()
@@ -212,22 +227,29 @@ class Assignment(QuxModel):
     instructions = models.TextField()
     rubric = models.TextField()
 
-
     @classmethod
-    def random_assignment(cls):  
+    def random_assignment(cls):
         faker = Faker()
         for _ in range(5):
-          
+
             rubric = faker.name()
             instructions = faker.last_name()
-            pro_id = int(random.sample(range(1,3), 1)[0])
-            con_id = int(random.sample(range(1,28), 1)[0])
+            pro_id = int(random.sample(range(1, 3), 1)[0])
+            con_id = int(random.sample(range(1, 28), 1)[0])
             program = Program.objects.get(pk=pro_id)
-            content = Content.objects.get(pk=con_id )
-            course =  Course.objects.get(pk=pro_id)
-            due = faker.date_time_between_dates(datetime_start=program.start, datetime_end=program.end, tzinfo=None)
-            Assignment.objects.create(due = due, course =course ,content = content ,program = program,instructions =instructions,rubric =rubric )
-        
+            content = Content.objects.get(pk=con_id)
+            course = Course.objects.get(pk=pro_id)
+            due = faker.date_time_between_dates(
+                datetime_start=program.start, datetime_end=program.end, tzinfo=None
+            )
+            Assignment.objects.create(
+                due=due,
+                course=course,
+                content=content,
+                program=program,
+                instructions=instructions,
+                rubric=rubric,
+            )
 
     class Meta:
         unique_together = ["program", "course", "content"]
@@ -262,22 +284,31 @@ class StudentAssignment(QuxModel):
     )
     feedback = models.TextField(default=None, null=True, blank=True)
 
-    
     @classmethod
-    def random_assignment(cls):  
+    def random_assignment(cls):
         faker = Faker()
         for _ in range(5):
-            stud_id = int(random.sample(range(1,10), 1)[0])
-            a_id = int(random.sample(range(1,5), 1)[0])
+            stud_id = int(random.sample(range(1, 10), 1)[0])
+            a_id = int(random.sample(range(1, 5), 1)[0])
             grade = random.uniform(30, 100)
             assignment = Assignment.objects.get(pk=a_id)
             student = Student.objects.get(pk=stud_id)
             reviewer = Faculty.objects.get(pk=a_id)
             feedback = faker.text()
-            pro_id = int(random.sample(range(1,3), 1)[0])       
-            program = Program.objects.get(pk=pro_id)      
-            submitted = faker.date_time_between_dates(datetime_start=program.start, datetime_end=program.end, tzinfo=None)
-            reviewed =  faker.date_time_between_dates(datetime_start=submitted, datetime_end=program.end, tzinfo=None)
-            StudentAssignment.objects.create(grade = grade, assignment =assignment ,student = student ,submitted = submitted,
-                                      reviewer =reviewer,feedback =feedback,reviewed = reviewed)
-        
+            pro_id = int(random.sample(range(1, 3), 1)[0])
+            program = Program.objects.get(pk=pro_id)
+            submitted = faker.date_time_between_dates(
+                datetime_start=program.start, datetime_end=program.end, tzinfo=None
+            )
+            reviewed = faker.date_time_between_dates(
+                datetime_start=submitted, datetime_end=program.end, tzinfo=None
+            )
+            StudentAssignment.objects.create(
+                grade=grade,
+                assignment=assignment,
+                student=student,
+                submitted=submitted,
+                reviewer=reviewer,
+                feedback=feedback,
+                reviewed=reviewed,
+            )
