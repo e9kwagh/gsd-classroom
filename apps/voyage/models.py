@@ -30,8 +30,20 @@ class Faculty(QuxModel):
                 user=user, github=f"https://github.com/{username}", is_active=True
             )
 
+    # def programs(self):
+    #     """
+    #     returns all programs associated with this faculty.
+    #     """
+    #     li =set()
+    #     for program  in Program.objects.all():
+    #         if self.content_set.filter(assignment__program = program):
+    #             li.add(program)
+    #     return li
+
     def programs(self):
-        return Program.objects.none()
+        return Program.objects.filter(
+            student__studentassignment__reviewer=self
+        ).distinct()
 
     def courses(self):
         """
@@ -46,15 +58,16 @@ class Faculty(QuxModel):
         """
         if assignment:
             return StudentAssignment.objects.filter(
-                reviewed=self, assignment=assignment
+                reviewer=self, assignment=assignment
             )
-        return StudentAssignment.objects.filter(reviewed=self)
+        return StudentAssignment.objects.filter(reviewer=self)
 
     def no_assignments(self):
         """
         Show the number of assignments by each faculty
         """
-        return Assignment.objects.filter(program__faculty=self).count()
+
+        return Assignment.objects.filter(content__faculty=self).count()
 
     def content(self, program=None, course=None):
         """
@@ -63,28 +76,28 @@ class Faculty(QuxModel):
         contents = self.content_set.all()
 
         if program and course:
-            ans = set()
+            final = set()
             for content in contents:
                 assignments = content.assignment_set.filter(
                     program=program, course=course
                 )
                 if assignments:
-                    ans.add(content)
-            contents = ans
+                    final.add(content)
+            contents = final
         elif program:
-            ans = set()
+            final = set()
             for content in contents:
                 assignments = content.assignment_set.filter(program=program)
                 if assignments:
-                    ans.add(content)
-            contents = ans
+                    final.add(content)
+            contents = final
         elif course:
-            ans = set()
+            final = set()
             for content in contents:
                 assignments = content.assignment_set.filter(course=course)
                 if assignments:
-                    ans.add(content)
-            contents = ans
+                    final.add(content)
+            contents = final
 
         return contents
 
@@ -118,6 +131,18 @@ class Program(QuxModel):
         """
         return self.student_set.all().count()
 
+    def courses(self):
+        """
+        number of courses in each program.
+
+        """
+        li = set(
+            course
+            for course in Course.objects.all()
+            if self.assignment_set.filter(course=course)
+        )
+        return len(li)
+
 
 class Course(QuxModel):
     """
@@ -137,16 +162,42 @@ class Course(QuxModel):
         return self.name
 
     def programs(self):
-        return Program.objects.none()
+        """
+        returns programs associated with this course
+        """
+        assignments = self.assignment_set.all()
+        return Program.objects.filter(assignment__in=assignments).distinct()
 
     def students(self):
-        return Student.objects.none()
+        """
+        students related with this course
+        """
+
+        programs = [assignment.program for assignment in self.assignment_set.all()]
+        students = []
+        for program in programs:
+            students.append(list(program.student_set.all()))
+        return list(set(students))
 
     def content(self):
-        return Content.objects.none()
+        """
+        all content in  with this course
+        """
+
+        courses = set(assignment.content for assignment in self.assignment_set.all())
+        return list(courses)
 
     def assignments(self):
-        return Assignment.objects.none()
+        """
+        assignments related with this course
+        """
+        return self.assignment_set.all().count()
+
+    def assignment_completed(self):
+        """
+        Total number of assignments that are completed and graded 100
+        """
+        return StudentAssignment.objects.filter(grade__gte=100).count()
 
 
 class Content(QuxModel):
@@ -171,6 +222,22 @@ class Content(QuxModel):
             Content.objects.create(
                 name=faker.first_name(), faculty=Faculty.objects.get(pk=id), repo=repo
             )
+
+    # def courses(self):
+    #     students = Student.objects.all()
+    #     return self.assignment_set.filter( assignment__course__in = students).count()
+
+    def courses(self):
+        """
+        Show the number of courses that use each content
+        """
+        return Course.objects.filter(assignment__content=self).distinct().count()
+
+    def assignments(self):
+        """
+        all assignments with content.
+        """
+        return self.assignment_set.all().count()
 
 
 class Student(QuxModel):
@@ -204,19 +271,53 @@ class Student(QuxModel):
             )
 
     def courses(self):
-        return Course.objects.none()
+        """courses related with program"""
+        # return Course.objects.none()
+        return set(
+            assignment.course for assignment in self.program.assignment_set.all()
+        )
 
     def assignments(self):
-        return Assignment.objects.none()
+        """
+        Returns all assignments associated with the student's program.
+        """
+        # return Assignment.objects.none()
+        return self.program.assignment_set.all()
 
     def assignments_submitted(self, assignment=None):
-        return StudentAssignment.objects.none()
+        """submitted assignments"""
+        return set(
+            assignment.submitted for assignment in self.studentassignment_set.all()
+        )
 
     def assignments_not_submited(self, assignment=None):
-        return StudentAssignment.objects.none()
+        """assignments not submitted"""
+        # return StudentAssignment.objects.none()
+        return self.studentassignment_set.filter(submitted__isnull=True)
 
     def assignments_graded(self, assignment=None):
-        return StudentAssignment.objects.none()
+        """
+        check the grade of assignments
+        """
+        if assignment:
+            return StudentAssignment.objects.filter(
+                grade__isnull=False, student=self, assignment=assignment
+            ).count()
+        return self.studentassignment_set.filter(
+            submitted__isnull=False, grade__isnull=False
+        ).count()
+
+    def average_grade(self):
+        """
+        students average grade
+        """
+        submitted_assignments = self.studentassignment_set.filter(
+            submitted__isnull=False
+        )
+        total_assignments = self.studentassignment_set.all().count()
+        total_grade = sum(assignment.grade for assignment in submitted_assignments)
+        avg = total_grade / total_assignments, 2
+        return avg
 
 
 class Assignment(QuxModel):
@@ -258,13 +359,30 @@ class Assignment(QuxModel):
         return self.content.name
 
     def students(self):
-        return Student.objects.none()
+        """
+        student assignments
+        """
+        return Student.objects.filter(studentassignment__assignment=self)
 
     def submissions(self, graded=None):
         """
         Return a queryset of submissions that are either all, graded, or not graded.
         """
-        return StudentAssignment.objects.none()
+        if graded:
+            return self.studentassignment_set.filter(grade__isnull=False)
+        if not graded:
+            return self.studentassignment_set.filter(grade__isnull=True)
+        return self.studentassignment_set.all()
+
+    def avg(self):
+        """
+        average grades of  assignment.
+        """
+        submissions = self.studentassignment_set.filter(grade__isnull=False)
+        assignment = self.studentassignment_set.all().count()
+        total_grade = sum(submission.grade for submission in submissions)
+        avg = (total_grade / assignment, 2)
+        return avg
 
 
 class StudentAssignment(QuxModel):
