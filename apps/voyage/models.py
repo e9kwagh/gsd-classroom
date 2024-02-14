@@ -1,18 +1,23 @@
+"""models.py"""
+
+import random
+from datetime import timedelta
+from faker import Faker
 from django.contrib.auth import get_user_model
 from django.db import models
 from qux.models import QuxModel
-from faker import Faker
-from datetime import timedelta
-import random
 
 
 class Faculty(QuxModel):
+    """Faculty"""
+
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     github = models.CharField(max_length=39, unique=True)
     is_active = models.BooleanField(default=True)
 
     @classmethod
     def random_faculty(cls):
+        """random_faculty"""
         faker = Faker()
         for _ in range(5):
             username = faker.user_name()
@@ -41,6 +46,9 @@ class Faculty(QuxModel):
     #     return li
 
     def programs(self):
+        """
+        programs
+        """
         return Program.objects.filter(
             student__studentassignment__reviewer=self
         ).distinct()
@@ -49,7 +57,6 @@ class Faculty(QuxModel):
         """
         Show the number of courses each faculty is teaching
         """
-
         return self.content_set.filter(assignment__isnull=False).distinct().count()
 
     def assignments_graded(self, assignment=None):
@@ -60,7 +67,7 @@ class Faculty(QuxModel):
             return StudentAssignment.objects.filter(
                 reviewer=self, assignment=assignment
             )
-        return StudentAssignment.objects.filter(reviewer=self)
+        return len(StudentAssignment.objects.filter(reviewer=self))
 
     def no_assignments(self):
         """
@@ -113,6 +120,7 @@ class Program(QuxModel):
 
     @classmethod
     def random_program(cls):
+        """random_program"""
         faker = Faker()
         for _ in range(3):
             name = faker.first_name()
@@ -123,7 +131,8 @@ class Program(QuxModel):
             Program.objects.create(name=name, start=start, end=end)
 
     def __str__(self):
-        return self.name
+        """str"""
+        return f"{self.name}"
 
     def students(self):
         """
@@ -134,7 +143,6 @@ class Program(QuxModel):
     def courses(self):
         """
         number of courses in each program.
-
         """
         li = set(
             course
@@ -153,13 +161,14 @@ class Course(QuxModel):
 
     @classmethod
     def random_course(cls):
+        """random_course"""
         faker = Faker()
         for _ in range(3):
             name = faker.first_name()
             Course.objects.create(name=name)
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
     def programs(self):
         """
@@ -197,7 +206,7 @@ class Course(QuxModel):
         """
         Total number of assignments that are completed and graded 100
         """
-        return StudentAssignment.objects.filter(grade__gte=100).count()
+        return StudentAssignment.objects.filter(submitted__isnull = False   ,grade__gte=100).count()
 
 
 class Content(QuxModel):
@@ -209,18 +218,19 @@ class Content(QuxModel):
     faculty = models.ForeignKey(Faculty, on_delete=models.DO_NOTHING)
     repo = models.URLField(max_length=240, unique=True)
 
-    class _Meta:
+    class Meta:
         verbose_name = "Content"
         verbose_name_plural = "Content"
 
     @classmethod
     def random_content(cls):
+        """random_content"""
         faker = Faker()
         for i in range(28):
-            id = int(random.sample(range(2, 6), 1)[0])
+            f_id = int(random.sample(range(2, 6), 1)[0])
             repo = f"https://github.com/{i}"
             Content.objects.create(
-                name=faker.first_name(), faculty=Faculty.objects.get(pk=id), repo=repo
+                name=faker.first_name(), faculty=Faculty.objects.get(pk=f_id), repo=repo
             )
 
     # def courses(self):
@@ -241,6 +251,8 @@ class Content(QuxModel):
 
 
 class Student(QuxModel):
+    """Student"""
+
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     github = models.CharField(max_length=39, unique=True)
     is_active = models.BooleanField(default=True)
@@ -248,6 +260,7 @@ class Student(QuxModel):
 
     @classmethod
     def random_student(cls):
+        """random_student"""
         faker = Faker()
         for _ in range(10):
             username = faker.user_name()
@@ -261,8 +274,8 @@ class Student(QuxModel):
                 first_name=first_name,
                 last_name=last_name,
             )
-            id = int(random.sample(range(1, 3), 1)[0])
-            program = Program.objects.get(pk=id)
+            pro_id = int(random.sample(range(1, 3), 1)[0])
+            program = Program.objects.get(pk=pro_id)
             Student.objects.create(
                 user=user,
                 github=f"https://github.com/{username}",
@@ -279,21 +292,44 @@ class Student(QuxModel):
 
     def assignments(self):
         """
-        Returns all assignments associated with the student's program.
+        all assignments associated with the student's program.
         """
         # return Assignment.objects.none()
         return self.program.assignment_set.all()
 
     def assignments_submitted(self, assignment=None):
         """submitted assignments"""
-        return set(
-            assignment.submitted for assignment in self.studentassignment_set.all()
-        )
+            # if assignment :
+            #  return self.studentassignment_set.filter(
+            #        assignment=assignment, submitted__isnull=False).count()
+            # return  self.studentassignment_set.filter(
+            #        assignment=assignment, submitted__isnull=False).count()
+
+        if assignment:
+            return StudentAssignment.objects.filter(
+                assignment=assignment, student=self, submitted__isnull=False
+            ).count()
+        return StudentAssignment.objects.filter(
+            student=self, submitted__isnull=False
+        ).count()
 
     def assignments_not_submited(self, assignment=None):
         """assignments not submitted"""
-        # return StudentAssignment.objects.none()
-        return self.studentassignment_set.filter(submitted__isnull=True)
+        # if assignment :
+        #       return self.studentassignment_set.filter(
+        #             assignment=assignment, submitted__isnull=True).count()
+        # return  self.studentassignment_set.filter(
+        #             submitted__isnull=True).count()
+
+        if assignment:
+            return Assignment.objects.exclude(
+                studentassignment__student=self,
+                studentassignment__assignment=assignment,
+                studentassignment__submitted__isnull=False,
+            ).count()
+        return Assignment.objects.exclude(
+            studentassignment__student=self, studentassignment__submitted__isnull=False
+        ).count()
 
     def assignments_graded(self, assignment=None):
         """
@@ -314,13 +350,18 @@ class Student(QuxModel):
         submitted_assignments = self.studentassignment_set.filter(
             submitted__isnull=False
         )
-        total_assignments = self.studentassignment_set.all().count()
-        total_grade = sum(assignment.grade for assignment in submitted_assignments)
-        avg = total_grade / total_assignments, 2
-        return avg
+        try:
+            total_assignments = self.studentassignment_set.all().count()
+            total_grade = sum(assignment.grade for assignment in submitted_assignments)
+            avg = int(total_grade // total_assignments)
+            return avg
+        except ZeroDivisionError:
+            return 0
 
 
 class Assignment(QuxModel):
+    """Assignment"""
+
     program = models.ForeignKey(Program, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     content = models.ForeignKey(Content, on_delete=models.CASCADE)
@@ -330,6 +371,7 @@ class Assignment(QuxModel):
 
     @classmethod
     def random_assignment(cls):
+        """random_assignment"""
         faker = Faker()
         for _ in range(5):
 
@@ -353,9 +395,12 @@ class Assignment(QuxModel):
             )
 
     class Meta:
+        """Meta"""
+
         unique_together = ["program", "course", "content"]
 
     def __str__(self):
+        """str"""
         return self.content.name
 
     def students(self):
@@ -381,11 +426,13 @@ class Assignment(QuxModel):
         submissions = self.studentassignment_set.filter(grade__isnull=False)
         assignment = self.studentassignment_set.all().count()
         total_grade = sum(submission.grade for submission in submissions)
-        avg = (total_grade / assignment, 2)
+        avg = total_grade // assignment
         return avg
 
 
 class StudentAssignment(QuxModel):
+    """StudentAssignment"""
+
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     grade = models.DecimalField(
@@ -404,6 +451,7 @@ class StudentAssignment(QuxModel):
 
     @classmethod
     def random_assignment(cls):
+        """random_assignment"""
         faker = Faker()
         for _ in range(5):
             stud_id = int(random.sample(range(1, 10), 1)[0])

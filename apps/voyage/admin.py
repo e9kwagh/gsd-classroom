@@ -19,7 +19,14 @@ class FacultyAdmin(admin.ModelAdmin):
     Faculty
     """
 
-    list_display = ("id", "user", "github", "is_active")
+    list_display = (
+        "id",
+        "user",
+        "github",
+        "num_courses",
+        "no_assignments",
+        "assignments_graded",
+    )
 
     def num_courses(self, obj):
         """
@@ -27,7 +34,7 @@ class FacultyAdmin(admin.ModelAdmin):
         """
         return obj.courses()
 
-    num_courses.short_description = "Courses "
+    num_courses.short_description = "no of courses"
 
     def no_assignments(self, obj):
         """
@@ -43,7 +50,7 @@ class FacultyAdmin(admin.ModelAdmin):
         """
         return obj.assignments_graded()
 
-    assignments_graded.short_description = " Graded"
+    assignments_graded.short_description = " assignments graded"
 
 
 @admin.register(Student)
@@ -52,7 +59,17 @@ class StudentAdmin(admin.ModelAdmin):
     Student
     """
 
-    list_display = ("user", "github", "is_active", "program")
+    list_display = (
+        "id",
+        "user",
+        "github",
+        "is_active",
+        "program",
+        "num_courses",
+        "num_assignments",
+        "assignments_submitted",
+        "average_grade",
+    )
 
     def num_courses(self, obj):
         """
@@ -60,7 +77,7 @@ class StudentAdmin(admin.ModelAdmin):
         """
         return obj.courses()
 
-    num_courses.short_description = "Courses"
+    num_courses.short_description = "name of Courses"
 
     def num_assignments(self, obj):
         """
@@ -126,7 +143,7 @@ class ProgramAdmin(admin.ModelAdmin):
         """
         return obj.courses()
 
-    num_courses.short_description = "Courses"
+    num_courses.short_description = "courses"
 
     def num_students(self, obj):
         """
@@ -159,7 +176,7 @@ class CourseAdmin(admin.ModelAdmin):
         """
         return obj.assignment_completed()
 
-    num_completed_assignments.short_description = "Completed Assignments"
+    num_completed_assignments.short_description = "student graded 100%"
 
 
 @admin.register(Assignment)
@@ -187,9 +204,9 @@ class StudentAssignmentAdmin(admin.ModelAdmin):
         "feedback",
     )
 
+
 # PS C:\Users\Kunal Wagh\Desktop\ie9\GSD\gsd-classroom> black apps
 # reformatted C:\Users\Kunal Wagh\Desktop\ie9\GSD\gsd-classroom\apps\voyage\apps.py
-# reformatted C:\Users\Kunal Wagh\Desktop\ie9\GSD\gsd-classroom\apps\voyage\migrations\0002_alter_assignment_unique_together.py
 # reformatted C:\Users\Kunal Wagh\Desktop\ie9\GSD\gsd-classroom\apps\voyage\urls\appurls.py
 # reformatted C:\Users\Kunal Wagh\Desktop\ie9\GSD\gsd-classroom\apps\voyage\admin.py
 # reformatted C:\Users\Kunal Wagh\Desktop\ie9\GSD\gsd-classroom\apps\voyage\views\appviews.py
