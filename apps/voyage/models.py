@@ -19,7 +19,7 @@ class Faculty(QuxModel):
     def random_faculty(cls):
         """random_faculty"""
         faker = Faker()
-        for _ in range(5):  
+        for _ in range(5):
             username = faker.user_name()
             first_name = faker.first_name()
             last_name = faker.last_name()
@@ -58,7 +58,7 @@ class Faculty(QuxModel):
         Show the number of courses each faculty is teaching
         """
         # return self.content_set.filter(assignment__isnull=False).distinct().count()
-        return Assignment.objects.filter(content__faculty = self )
+        return Assignment.objects.filter(content__faculty=self)
 
     def assignments_graded(self, assignment=None):
         """
@@ -151,7 +151,7 @@ class Program(QuxModel):
         #     if self.assignment_set.filter(course__in = course)
         # )
 
-        li =  self.assignment_set.filter(course__in = Course.objects.all())
+        li = self.assignment_set.filter(course__in=Course.objects.all())
         return li
 
 
@@ -190,8 +190,11 @@ class Course(QuxModel):
         # for program in programs:
         #     students.append(list(program.student_set.all()))
         # return list(set(students))
-        
-        return Assignment.objects.filter(program__student__program__isnull = False , course =self)
+
+        return Assignment.objects.filter(
+            program__student__program__isnull=False, course=self
+        )
+
     def content(self):
         """
         all content in this course
@@ -199,20 +202,19 @@ class Course(QuxModel):
 
         courses = set(assignment.content for assignment in self.assignment_set.all())
         return list(courses)
-        
 
     def assignments(self):
         """
         assignments related with this course
         """
         # return self.assignment_set.all().count()
-        return Assignment.objects.filter(course = self )
+        return Assignment.objects.filter(course=self)
 
     def assignment_completed(self):
         """
         Total number of assignments that are completed and graded 100
         """
-        return StudentAssignment.objects.filter(submitted__isnull = False   ,grade__gte=100)
+        return StudentAssignment.objects.filter(submitted__isnull=False, grade__gte=100)
 
 
 class Content(QuxModel):
@@ -239,10 +241,7 @@ class Content(QuxModel):
                 name=faker.first_name(), faculty=Faculty.objects.get(pk=f_id), repo=repo
             )
 
-    # def courses(self):
-    #     students = Student.objects.all()
-    #     return self.assignment_set.filter( assignment__course__in = students).count()
-
+    
     def courses(self):
         """
         Show the number of courses that use each content
@@ -305,12 +304,7 @@ class Student(QuxModel):
 
     def assignments_submitted(self, assignment=None):
         """submitted assignments"""
-            # if assignment :
-            #  return self.studentassignment_set.filter(
-            #        assignment=assignment, submitted__isnull=False).count()
-            # return  self.studentassignment_set.filter(
-            #        assignment=assignment, submitted__isnull=False).count()
-
+        
         if assignment:
             return StudentAssignment.objects.filter(
                 assignment=assignment, student=self, submitted__isnull=False
@@ -321,12 +315,6 @@ class Student(QuxModel):
 
     def assignments_not_submited(self, assignment=None):
         """assignments not submitted"""
-        # if assignment :
-        #       return self.studentassignment_set.filter(
-        #             assignment=assignment, submitted__isnull=True).count()
-        # return  self.studentassignment_set.filter(
-        #             submitted__isnull=True).count()
-
         if assignment:
             return Assignment.objects.exclude(
                 studentassignment__student=self,

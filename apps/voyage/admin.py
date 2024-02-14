@@ -1,4 +1,5 @@
 """modules"""
+
 from django.urls import reverse
 from django.utils.html import format_html
 from django.contrib import admin
@@ -76,16 +77,15 @@ class StudentAdmin(admin.ModelAdmin):
         """
         number of courses each student is enrolled.
         """
-      
         courses = obj.courses()
         if courses:
-            dropdown_html = '<select>'
+            dropdown_html = "<select>"
             for course in courses:
                 url = reverse("admin:voyage_course_change", args=[course.id])
                 dropdown_html += f'<option value="{url}">{course.name}</option>'
-            dropdown_html += '</select>'
+            dropdown_html += "</select>"
             return format_html(dropdown_html)
-   
+        return obj.courses()
 
     num_courses.short_description = "name of Courses"
 
@@ -95,15 +95,16 @@ class StudentAdmin(admin.ModelAdmin):
         """
         assignments = obj.assignments()
         if assignments:
-            dropdown_html = '<select>'
+            dropdown_html = "<select>"
             for assignment in assignments:
                 url = reverse("admin:voyage_course_change", args=[assignment.id])
-                dropdown_html += f'<option value="{url}">{assignment.content.name}</option>'
-            dropdown_html += '</select>'
+                dropdown_html += (
+                    f'<option value="{url}">{assignment.content.name}</option>'
+                )
+            dropdown_html += "</select>"
             return format_html(dropdown_html)
-        
-        return obj.assignments()
 
+        return obj.assignments()
 
     num_assignments.short_description = "Total assignments"
 
@@ -161,19 +162,18 @@ class ProgramAdmin(admin.ModelAdmin):
         """
         number of courses in each program.
         """
-         
+
         courses = obj.courses()
         if courses:
-            dropdown_html = '<select>'
+            dropdown_html = "<select>"
             for course in courses:
                 url = reverse("admin:voyage_course_change", args=[course.id])
-                content_name = course.content.name if course.content else 'No Content'
+                content_name = course.content.name if course.content else "No Content"
                 dropdown_html += f'<option value="{url}">{content_name}</option>'
-            dropdown_html += '</select>'
+            dropdown_html += "</select>"
             return format_html(dropdown_html)
-        
-        return obj.courses().count()
 
+        return obj.courses().count()
 
     num_courses.short_description = "courses"
 
@@ -181,16 +181,16 @@ class ProgramAdmin(admin.ModelAdmin):
         """
         number of students in each program.
         """
-        students =  obj.students()
+        students = obj.students()
         if students:
-            dropdown_html = '<select>'
+            dropdown_html = "<select>"
             for student in students:
                 url = reverse("admin:voyage_course_change", args=[student.id])
-                student_name = student.user.username if student.user else 'No User'
+                student_name = student.user.username if student.user else "No User"
                 dropdown_html += f'<option value="{url}">{student_name}</option>'
-            dropdown_html += '</select>'
+            dropdown_html += "</select>"
             return format_html(dropdown_html)
-        
+
         return obj.students().count()
 
     num_students.short_description = "Students"
@@ -210,19 +210,17 @@ class CourseAdmin(admin.ModelAdmin):
         """
         assignments = obj.assignments()
         if assignments:
-            dropdown_html = '<select>'
+            dropdown_html = "<select>"
             for assignment in assignments:
                 url = reverse("admin:voyage_course_change", args=[assignment.id])
-                content_name = assignment.content.name if assignment.content else 'No Content'
+                content_name = (
+                    assignment.content.name if assignment.content else "No Content"
+                )
                 dropdown_html += f'<option value="{url}">{content_name}</option>'
-            dropdown_html += '</select>'
+            dropdown_html += "</select>"
             return format_html(dropdown_html)
-        
+
         return obj.assignments().count()
-
-
-
-     
 
     num_assignments.short_description = "Assignments"
 
@@ -234,11 +232,20 @@ class CourseAdmin(admin.ModelAdmin):
 
     num_completed_assignments.short_description = "student graded 100%"
 
-
 @admin.register(Assignment)
 class AssignmentAdmin(admin.ModelAdmin):
-    list_display = ('program', 'course_link', 'content', 'due', 'instructions', 'rubric')
-    list_filter = ('course', 'program')
+    """
+    AssignmentAdmin
+      """
+    list_display = (
+        "program",
+        "course_link",
+        "content",
+        "due",
+        "instructions",
+        "rubric",
+    )
+    list_filter = ("course", "program")
 
     # def num_assignments(self, obj):
     #     """
@@ -252,14 +259,19 @@ class AssignmentAdmin(admin.ModelAdmin):
     #             content_name = assignment.content.name if assignment.content else 'No Content'
     #         dropdown_html += '</select>'
     #         return format_html(dropdown_html)
-        
+
     #     return obj.assignments().count()
 
-
     def course_link(self, obj):
+        """course_link
+        """
+        return format_html(
+            '<a href="/admin/voyage/course/{0}/change/">{1}</a>',
+            obj.course.id,
+            obj.course.name,
+        )
 
-        return format_html('<a href="/admin/voyage/course/{0}/change/">{1}</a>', obj.course.id, obj.course.name)
-    course_link.short_description = 'Course'
+    course_link.short_description = "Course"
 
     # courses = obj.courses()
     #         if courses:
@@ -269,8 +281,6 @@ class AssignmentAdmin(admin.ModelAdmin):
     #                 dropdown_html += f'<option value="{url}">{course.name}</option>'
     #             dropdown_html += '</select>'
     #             return format_html(dropdown_html)
-   
-
 
 
 @admin.register(StudentAssignment)
@@ -288,9 +298,6 @@ class StudentAssignmentAdmin(admin.ModelAdmin):
         "reviewer",
         "feedback",
     )
-
-
-
 
 
 # PS C:\Users\Kunal Wagh\Desktop\ie9\GSD\gsd-classroom> black apps
