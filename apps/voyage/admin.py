@@ -69,8 +69,7 @@ class FacultyAdmin(admin.ModelAdmin):
         """   
         assignments = obj.assignments_graded().count()    
         if assignments :
-            html = f'<a href="/admin/voyage/studentassignment/?id__in={obj.id}">{assignments}</a>'
-         
+            html = f'<a href="/admin/voyage/studentassignment/?id__in={obj.id}">{assignments}</a>' 
             return format_html(html)
         return 0
 
@@ -248,21 +247,20 @@ class CourseAdmin(admin.ModelAdmin):
     Course
     """
 
-    list_display = ("name", "num_assignments", "num_completed_assignments")
+    list_display = ("name","num_assignments", "num_completed_assignments")
 
     def num_assignments(self, obj):
         """
-        number of assignments in each course.
+        Number of assignments in each course.
         """
-        assignments = obj.assignments()
-        ids = [i.id for i in assignments]
-        if assignments:
+        assignments_count = obj.assignment_set.count()  
+        if assignments_count:
+            ids = [assignment.id for assignment in obj.assignment_set.all()]  
             html = '<a href="/admin/voyage/assignment/?id__in='
-            for i in ids:
-                html = "".join((html, f"{i},"))
-            return format_html(html[:-1] + f'">{len(assignments)}</a>')
-
-        return obj.assignments().count()
+            for assignment_id in ids:
+                html += f"{assignment_id},"
+            return format_html(html[:-1] + f'">{assignments_count}</a>')
+        return 0
 
     num_assignments.short_description = "Assignments"
 

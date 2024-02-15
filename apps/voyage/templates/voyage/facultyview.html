@@ -1,0 +1,19 @@
+
+
+
+{% extends 'voyage/base.html' %}
+
+{% block content %}
+    <div class="container p-3 mt-5">
+        <ul>
+            {% for facultie in faculties %}
+    
+            
+            <li><a href="{% url 'faculty' facultie.id %}">{{ facultie.user }}</a></li>
+            {% endfor %}
+    
+        </ul>
+    </div>
+    
+
+{% endblock %}

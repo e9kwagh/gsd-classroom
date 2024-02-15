@@ -45,6 +45,7 @@ class Faculty(QuxModel):
             student__studentassignment__reviewer=self
         ).distinct()
 
+    
     def courses(self):
         """
         Show the number of courses each faculty is teaching
@@ -172,6 +173,7 @@ class Course(QuxModel):
         assignments = self.assignment_set.all()
         return Program.objects.filter(assignment__in=assignments).distinct()
 
+    @property
     def students(self):
         """
         students related with this course
@@ -194,14 +196,15 @@ class Course(QuxModel):
 
         return set(assignment.content for assignment in self.assignment_set.all())
         
-
+    @property
     def assignments(self):
         """
         assignments related with this course
         """
-        # return self.assignment_set.all().count()
         return Assignment.objects.filter(course=self)
+        #return self.assignment_set.all()
 
+  
     def assignment_completed(self):
         """
         Total number of assignments that are completed and graded 100
@@ -279,7 +282,7 @@ class Student(QuxModel):
                 is_active=True,
                 program=program,
             )
-
+   
     def courses(self):
         """courses related with program"""
         # return Course.objects.none()
@@ -293,7 +296,7 @@ class Student(QuxModel):
         """
         # return Assignment.objects.none()
         return self.program.assignment_set.all()
-
+    
     def assignments_submitted(self, assignment=None):
         """submitted assignments"""
         
@@ -316,7 +319,9 @@ class Student(QuxModel):
         return Assignment.objects.exclude(
             studentassignment__student=self, studentassignment__submitted__isnull=False
         )
+    
 
+    
     def assignments_graded(self, assignment=None):
         """
         check the grade of assignments
@@ -328,7 +333,9 @@ class Student(QuxModel):
         return self.studentassignment_set.filter(
             submitted__isnull=False, grade__isnull=False
         )
+    
 
+    @property
     def average_grade(self):
         """
         students average grade
@@ -395,6 +402,8 @@ class Assignment(QuxModel):
         """
         return Student.objects.filter(studentassignment__assignment=self)
 
+    
+    @property
     def submissions(self, graded=None):
         """
         Return a queryset of submissions that are either all, graded, or not graded.
@@ -404,17 +413,21 @@ class Assignment(QuxModel):
         if not graded:
             return self.studentassignment_set.filter(grade__isnull=True)
         return self.studentassignment_set.all()
+    
 
+    @property
     def avg(self):
         """
         average grades of  assignment.
         """
         submissions = self.studentassignment_set.filter(grade__isnull=False)
-        assignment = self.studentassignment_set.all().count()
-        total_grade = sum(submission.grade for submission in submissions)
-        avg = total_grade // assignment
-        return avg
-
+        try :
+            assignment = self.studentassignment_set.all().count()
+            total_grade = sum(submission.grade for submission in submissions)
+            avg = total_grade // assignment
+            return avg
+        except ZeroDivisionError:
+            return 0
 
 class StudentAssignment(QuxModel):
     """StudentAssignment"""

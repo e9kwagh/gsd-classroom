@@ -1,0 +1,160 @@
+{% extends 'voyage/base.html' %}
+
+{% block title %}
+    Faculty
+{% endblock title %}
+
+{% block content %}
+
+{% if page == "faculty" %}
+<!-- Faculty Dashboard -->
+<div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        {% if message %}
+          <div class="alert alert-danger" role="alert">
+            {{ message }}
+          </div>
+        {% else %}
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">All courses</th>
+                  <th scope="col">Number of students</th>
+                  <th scope="col">Number of assignments</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for course in courses %}
+                <tr>
+                  <td>{{ course }}</td>
+                  <td>{{ course.students|length }}</td>
+                  <td>{{ course.assignments|length }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% else %}
+
+<!-- student Dashboard for all courses -->
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if message %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% else %}
+                
+                <h3 class="text-center mb-4" >Student courses</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">All courses</th>
+                                <th scope="col"  class="text-end">Number of assignments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                                <tr>
+                                    <td>{{ course }}</td>
+                                    <td class="text-end">{{ course.assignments|length }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+<!-- student Dashboard for all assignments -->
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if message %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% else %}
+                <h3 class="text-center mb-4" >Student assignment</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">All assignment</th>
+                                <th class="text-end"scope="col">Avarage Assignments graded</th>
+                              
+
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for assignment in object_list %}
+                                <tr>
+                                    <td>{{ assignment}}</td>
+                                    <td class="text-end"> {{assignment.avg}} </td>
+
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+
+<!-- student Dashboard for all submission -->
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if message %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% else %}
+                <h3 class="text-center mb-4" >submissions</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+    
+                                <th scope="col">All submitions </th>
+                                <th scope="col" class ="text-right"> no of submissions </th>
+                             
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for submission in submissions %}
+                                <tr>
+                                    <td>{{ submission.assignment}}</td>    
+                                    <td>{{ submission.assignment.Submissions.count }} </td>              
+
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock content %}
