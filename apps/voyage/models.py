@@ -35,15 +35,7 @@ class Faculty(QuxModel):
                 user=user, github=f"https://github.com/{username}", is_active=True
             )
 
-    # def programs(self):
-    #     """
-    #     returns all programs associated with this faculty.
-    #     """
-    #     li =set()
-    #     for program  in Program.objects.all():
-    #         if self.content_set.filter(assignment__program = program):
-    #             li.add(program)
-    #     return li
+
 
     def programs(self):
         """
@@ -68,14 +60,14 @@ class Faculty(QuxModel):
             return StudentAssignment.objects.filter(
                 reviewer=self, assignment=assignment
             )
-        return len(StudentAssignment.objects.filter(reviewer=self))
+        return StudentAssignment.objects.filter(reviewer=self)
 
     def no_assignments(self):
         """
         Show the number of assignments by each faculty
         """
 
-        return Assignment.objects.filter(content__faculty=self).count()
+        return Assignment.objects.filter(content__faculty=self).distinct()
 
     def content(self, program=None, course=None):
         """
@@ -200,8 +192,8 @@ class Course(QuxModel):
         all content in this course
         """
 
-        courses = set(assignment.content for assignment in self.assignment_set.all())
-        return list(courses)
+        return set(assignment.content for assignment in self.assignment_set.all())
+        
 
     def assignments(self):
         """
@@ -246,13 +238,13 @@ class Content(QuxModel):
         """
         Show the number of courses that use each content
         """
-        return Course.objects.filter(assignment__content=self).distinct().count()
+        return Course.objects.filter(assignment__content=self).distinct()
 
     def assignments(self):
         """
         all assignments with content.
         """
-        return self.assignment_set.all().count()
+        return self.assignment_set.all()
 
 
 class Student(QuxModel):
@@ -308,10 +300,10 @@ class Student(QuxModel):
         if assignment:
             return StudentAssignment.objects.filter(
                 assignment=assignment, student=self, submitted__isnull=False
-            ).count()
+            )
         return StudentAssignment.objects.filter(
             student=self, submitted__isnull=False
-        ).count()
+        )
 
     def assignments_not_submited(self, assignment=None):
         """assignments not submitted"""
@@ -320,10 +312,10 @@ class Student(QuxModel):
                 studentassignment__student=self,
                 studentassignment__assignment=assignment,
                 studentassignment__submitted__isnull=False,
-            ).count()
+            )
         return Assignment.objects.exclude(
             studentassignment__student=self, studentassignment__submitted__isnull=False
-        ).count()
+        )
 
     def assignments_graded(self, assignment=None):
         """
