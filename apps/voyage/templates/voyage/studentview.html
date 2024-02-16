@@ -1,15 +1,16 @@
 {% extends 'voyage/base.html' %}
 
 {% block title %}
-     Student
+    Student
 {% endblock %}
 
 {% block content %}
-    <h1>Students</h1>
-
-    <ul>
-        {% for student in students %}
-            <li><a href="{% url 'student' student.id %}">{{ student.user }}</a></li>
-        {% endfor %}
-    </ul>
+    <div class="container p-3 mt-5 text-center" style="max-width: 600px;">
+        <h3 class="mb-5">Students</h3>
+        <ul class="list-group">
+            {% for student in students %}
+                <li class="list-group-item"><a href="{% url 'student' student.id %}" class="text-decoration-none">{{ student.user }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
 {% endblock %}

@@ -1,19 +1,13 @@
 
-
-
 {% extends 'voyage/base.html' %}
 
 {% block content %}
-    <div class="container p-3 mt-5">
-        <ul>
-            {% for facultie in faculties %}
-    
-            
-            <li><a href="{% url 'faculty' facultie.id %}">{{ facultie.user }}</a></li>
+    <div class="container p-3 mt-5 text-center" style="max-width: 600px;">
+        <h3 class="mb-4">Faculty</h3>
+        <ul class="list-group">
+            {% for faculty in faculties %}
+                <li class="list-group-item"><a href="{% url 'faculty' faculty.id %}" class="text-decoration-none">{{ faculty.user }}</a></li>
             {% endfor %}
-    
         </ul>
     </div>
-    
-
 {% endblock %}
